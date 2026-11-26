@@ -4,7 +4,7 @@
 @media (min-width: 900px) { .brand-logo { height: 42px; } }
 .centered { min-height: 100dvh; display: grid; place-items: center; padding: 24px 16px; }
 
-.screen-title { display: grid; gap: 4px; }
+.screen-title { display: grid; gap: 4px; justify-items: start; }
 .screen-title h1 { font-size: clamp(2.1rem, 9vw, 3.4rem); }
 .screen-title__lede { margin: 6px 0 0; font-weight: 600; max-width: 40ch; }
 
@@ -42,3 +42,35 @@
 .welcome__title { font-size: clamp(2.2rem, 10vw, 4rem); max-width: 14ch; }
 .welcome__lede { margin: 0; font-weight: 600; max-width: 34ch; }
 .welcome__main { padding: 28px 16px 48px; }
+
+/* Store finder */
+.store-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+.store { display: grid; gap: 8px; }
+.store--mine { box-shadow: 6px 6px 0 var(--t-primary); }
+.store__head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.store__name { margin: 0; font-family: var(--t-font-display); font-stretch: 125%; text-transform: uppercase; font-weight: 900; font-size: 1.25rem; line-height: 1; }
+.store__addr { margin: 0; color: var(--t-muted); }
+.store__actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+
+/* Code */
+.code-card { display: grid; justify-items: center; gap: 12px; text-align: center; box-shadow: 6px 6px 0 var(--t-primary); padding: 28px 20px; }
+.code-card__label { margin: 0; font-family: var(--t-font-ui); font-weight: 800; letter-spacing: .1em; text-transform: uppercase; font-size: .8rem; color: var(--t-accent); }
+.code-card__digits { margin: 0; display: flex; gap: 10px; }
+.code-card__digits span {
+  display: grid; place-items: center; width: clamp(56px, 18vw, 76px); height: clamp(72px, 23vw, 96px);
+  background: var(--t-accent); color: var(--t-accent-text); border: 3px solid var(--t-inverse-text); border-radius: 16px;
+  font-family: var(--t-font-display); font-stretch: 125%; font-weight: 900; font-size: clamp(2.6rem, 12vw, 3.6rem); font-variant-numeric: tabular-nums;
+}
+.code-card__timer { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+.code-status { display: grid; gap: 10px; justify-items: start; }
+.code-status__title { font-size: clamp(1.5rem, 6vw, 2rem); }
+.code-status p { margin: 0; }
+.code-start { display: grid; gap: 14px; }
+.code-start__store { display: grid; gap: 6px; font-family: var(--t-font-ui); font-weight: 700; font-size: .9rem; }
+.code-start__store select { font: inherit; font-weight: 600; min-height: 48px; padding: 8px 12px; border: var(--t-border-width) solid var(--t-line); border-radius: var(--t-radius-sm); background: var(--t-surface); color: var(--t-text); }
+.small-print { margin: 0; font-size: .85rem; text-align: center; }
+
+/* Join */
+.join-card { display: grid; gap: 12px; }
+.join-card__title { font-size: clamp(1.7rem, 7vw, 2.3rem); }
+.join-card__lede { margin: 0; font-weight: 600; }

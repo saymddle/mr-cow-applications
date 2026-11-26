@@ -1,6 +1,6 @@
 # Implementation status
 
-Last updated: 2026-11-26 (Phase 2). Update this file in the same PR that changes an area.
+Last updated: 2026-11-26 (Phase 2, Phase 3 part 1). Update this file in the same PR that changes an area.
 
 Legend: ✅ implemented and tested · 🟨 shell in place, feature pending · ⬜ not started
 
@@ -22,9 +22,10 @@ Legend: ✅ implemented and tested · 🟨 shell in place, feature pending · �
 
 | Area | State | Phase |
 | --- | --- | --- |
-| Customer registration with enrollment and consents | ⬜ | 3 (needs Mr. Cow consent/policy text) |
-| Four-digit code screen (live TOGIVA service) | 🟨 | 3 |
-| Store finder | 🟨 | 3 |
+| Joining the membership (TOGIVA enrollment: name, usual store) | ✅ | 3 |
+| Marketing/notification consents at sign-up | ⬜ | 3 (needs Mr. Cow consent/policy text and versions) |
+| Four-digit code screen (live TOGIVA service) | ✅ | 3: issue for a chosen store, digits shown once with countdown, cancel, live status (cashier has it, purchase pending, recorded, under review, voided) |
+| Store finder | ✅ | 3: live participating stores, search, directions, call, "my store" |
 | Wallet, activity, rewards, offers | 🟨 | 3–4 (TOGIVA loyalty routes are planned) |
 | Franchise: identify customer, verify rewards, team, performance, support | 🟨 | 5 |
 | Corporate: reporting, regions, franchisees, customers, loyalty, campaigns, staff, audit | 🟨 | 6 (loyalty/rewards in 4) |
@@ -33,7 +34,7 @@ Legend: ✅ implemented and tested · 🟨 shell in place, feature pending · �
 
 ## Tests (2026-11-26)
 
-`pnpm test`: **54 passed, 0 failed**.
+`pnpm test`: **59 passed, 0 failed**.
 
 | Package | Tests |
 | --- | --- |
@@ -42,11 +43,11 @@ Legend: ✅ implemented and tested · 🟨 shell in place, feature pending · �
 | `packages/api-client` | 7 |
 | `packages/auth` | 19 |
 | `packages/ui` | 7 |
-| `apps/customer-pwa` | 5 |
+| `apps/customer-pwa` | 10 |
 | `apps/franchise-portal` | 5 |
 | `apps/corporate-console` | 4 |
 
-Also verified by hand: all three apps running against a local TOGIVA Core with its development fixtures. Dev-token sign-in, `/v1/me`, CORS, organization lookup, store overview and the locations list all worked; the cashier was correctly refused by the corporate console.
+Also verified by hand: all three apps running against a local TOGIVA Core with its development fixtures. Dev-token sign-in, `/v1/me`, CORS, organization lookup, store overview and the locations list all worked; the cashier was correctly refused by the corporate console. Phase 3 part 1 was checked the same way: a brand-new user joined, saw the stores, got a code, and the screen switched to "the cashier has your code" when a real cashier lookup reserved it.
 
 ## Inputs still needed
 
