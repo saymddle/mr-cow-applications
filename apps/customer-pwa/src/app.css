@@ -74,3 +74,33 @@
 .join-card { display: grid; gap: 12px; }
 .join-card__title { font-size: clamp(1.7rem, 7vw, 2.3rem); }
 .join-card__lede { margin: 0; font-weight: 600; }
+
+/* ---- Points, activity, rewards (Phase 4) ---- */
+.section-title { margin: 0; font-family: var(--t-font-display); font-stretch: 125%; font-weight: 900; font-size: 1.25rem; text-transform: uppercase; }
+.points-card { display: grid; gap: 14px; }
+.points-card__label { margin: 0; font-family: var(--t-font-ui); font-weight: 800; letter-spacing: .12em; text-transform: uppercase; font-size: .8rem; color: var(--t-muted); }
+.points-card__value { margin: 0; font-family: var(--t-font-display); font-stretch: 125%; font-weight: 900; font-size: clamp(2.4rem, 11vw, 3.4rem); line-height: 1; font-variant-numeric: tabular-nums; }
+.points-card__balance, .points-card__tier { display: grid; gap: 6px; }
+.points-card__tier p { margin: 0; }
+.points-card__next { margin: 0; display: flex; align-items: center; gap: 8px; font-weight: 700; }
+.points-card__link { font-weight: 800; color: var(--t-text); }
+.progress { height: 14px; border: var(--t-border-width) solid var(--t-line); border-radius: 999px; background: var(--t-surface); overflow: hidden; }
+.progress span { display: block; height: 100%; background: var(--t-primary); }
+.activity { display: grid; gap: 12px; }
+.activity__list { list-style: none; margin: 0; padding: 0; display: grid; }
+.activity__item { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--t-line); }
+.activity__item:last-child { border-bottom: 0; }
+.activity__body p, .activity__points { margin: 0; }
+.activity__title { font-weight: 700; }
+.activity__points { font-weight: 900; font-variant-numeric: tabular-nums; text-align: right; }
+.activity__points--neg { color: var(--t-danger); }
+.rewards-balance { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.reward-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.reward-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
+.reward-row p { margin: 0 0 4px; }
+.reward-row__name { font-weight: 800; font-size: 1.1rem; }
+.reward-row__cost { font-weight: 900; font-variant-numeric: tabular-nums; }
+.redeem-token { display: grid; justify-items: center; gap: 12px; text-align: center; }
+.redeem-token__value { margin: 0; font-family: var(--t-font-display); font-weight: 900; font-size: clamp(1.4rem, 7vw, 2rem); letter-spacing: .06em; font-variant-numeric: tabular-nums; }
+.redeem-token__value span { display: inline-block; white-space: nowrap; }
+.points-card .small-print, .activity .small-print, .reward-row .small-print { text-align: left; }

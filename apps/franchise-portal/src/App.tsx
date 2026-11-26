@@ -12,6 +12,7 @@ import { useActiveLocation } from "./active-location";
 import type { AppConfig } from "./config";
 import { allFranchiseItems, franchiseNav } from "./nav";
 import { plannedScreens } from "./screens/planned";
+import { RedemptionsScreen } from "./screens/Redemptions";
 import { TodayScreen } from "./screens/Today";
 
 const Link: ShellLink = ({ to, children, ...rest }) => <RouterLink to={to} {...rest}>{children}</RouterLink>;
@@ -91,6 +92,10 @@ function Portal() {
     >
       <Routes>
         <Route index element={<TodayScreen membership={membership!} locationId={activeLocationId!} organizationId={organization.organization.id} />} />
+        <Route path="redemptions" element={
+          <Guard membership={membership} activeLocationId={activeLocationId} item={allFranchiseItems.find((i) => i.to === "/redemptions")!}>
+            <RedemptionsScreen organizationId={organization.organization.id} locationId={activeLocationId!} />
+          </Guard>} />
         {plannedScreens.map((p) => {
           const item = allFranchiseItems.find((i) => i.to === p.path)!;
           return <Route key={p.path} path={p.path.slice(1)} element={<Guard membership={membership} activeLocationId={activeLocationId} item={item}>{p.element}</Guard>} />;

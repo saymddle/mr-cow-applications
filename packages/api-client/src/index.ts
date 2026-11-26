@@ -90,6 +90,29 @@ export function createTogivaClient(options: TogivaClientOptions) {
       current: (organizationId: string) => call(raw.GET("/v1/me/organizations/{organizationId}/connection-codes/current", org(organizationId))),
       cancel: (organizationId: string) => call(raw.DELETE("/v1/me/organizations/{organizationId}/connection-codes/current", org(organizationId))),
     },
+    loyalty: {
+      wallet: (organizationId: string) => call(raw.GET("/v1/me/organizations/{organizationId}/wallet", org(organizationId))),
+      activity: (organizationId: string, page: { cursor?: string; limit?: number } = {}) =>
+        call(raw.GET("/v1/me/organizations/{organizationId}/activity", { params: { path: { organizationId }, query: page } })),
+      rewards: (organizationId: string, query: { cursor?: string; limit?: number; locationId?: string } = {}) =>
+        call(raw.GET("/v1/me/organizations/{organizationId}/rewards", { params: { path: { organizationId }, query } })),
+    },
+    redemptions: {
+      issue: (organizationId: string, body: RequestBodyOf<"issueRedemption">) =>
+        call(raw.POST("/v1/me/organizations/{organizationId}/redemptions", { ...org(organizationId), body })),
+      list: (organizationId: string, query: { cursor?: string; limit?: number; status?: "issued" | "completed" | "expired" | "cancelled" | "reversed" } = {}) =>
+        call(raw.GET("/v1/me/organizations/{organizationId}/redemptions", { params: { path: { organizationId }, query } })),
+      get: (organizationId: string, redemptionId: string) =>
+        call(raw.GET("/v1/me/organizations/{organizationId}/redemptions/{redemptionId}", { params: { path: { organizationId, redemptionId } } })),
+      cancel: (organizationId: string, redemptionId: string) =>
+        call(raw.DELETE("/v1/me/organizations/{organizationId}/redemptions/{redemptionId}", { params: { path: { organizationId, redemptionId } } })),
+      /** Staff: check a token presented at the counter without using it. */
+      verify: (organizationId: string, locationId: string, body: RequestBodyOf<"verifyRedemption">) =>
+        call(raw.POST("/v1/organizations/{organizationId}/locations/{locationId}/redemptions/verify", { params: { path: { organizationId, locationId } }, body })),
+      /** Staff: mark the reward as handed over. */
+      complete: (organizationId: string, locationId: string, body: RequestBodyOf<"completeRedemption">) =>
+        call(raw.POST("/v1/organizations/{organizationId}/locations/{locationId}/redemptions/complete", { params: { path: { organizationId, locationId } }, body })),
+    },
   };
 }
 

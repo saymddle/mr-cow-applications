@@ -68,3 +68,39 @@ export function directionsUrl(l: LocationSummary): string | null {
   const q = [l.name, formatAddress(l)].filter(Boolean).join(", ");
   return formatAddress(l) ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}` : null;
 }
+
+export type LoyaltyLoad<T> = Load<T> | { status: "unavailable" };
+
+/**
+ * Loads a loyalty read. "unavailable" means the organization has not launched
+ * its rewards program in TOGIVA yet, which the screens say plainly instead of
+ * showing placeholder numbers.
+ */
+export function useLoyalty<T>(organizationId: string | null | undefined, enabled: boolean, fetcher: (orgId: string) => Promise<T>) {
+  const [state, setState] = useState<LoyaltyLoad<T>>({ status: "loading" });
+  const load = useCallback(async () => {
+    if (!organizationId || !enabled) return;
+    try {
+      setState({ status: "ready", data: await fetcher(organizationId) });
+    } catch (e) {
+      if (e instanceof TogivaApiError && e.code === "loyalty_program_unavailable") setState({ status: "unavailable" });
+      else setState({ status: "error", error: asError(e) });
+    }
+    // fetcher is expected to be stable (wrap in useCallback).
+  }, [organizationId, enabled, fetcher]);
+  useEffect(() => {
+    void load();
+  }, [load]);
+  return [state, load] as const;
+}
+
+/** Formats a qualification amount for its metric (spend is minor units of the org currency). */
+export function formatProgress(metric: "qualifying_spend" | "qualifying_visits" | "qualifying_points", value: number, currency: string): string {
+  if (metric === "qualifying_spend") {
+    const digits = new Intl.NumberFormat("en-US", { style: "currency", currency }).resolvedOptions().maximumFractionDigits ?? 2;
+    const whole = value % 10 ** digits === 0;
+    return new Intl.NumberFormat("en-US", { style: "currency", currency, minimumFractionDigits: whole ? 0 : digits, maximumFractionDigits: whole ? 0 : digits }).format(value / 10 ** digits);
+  }
+  if (metric === "qualifying_visits") return `${value} ${value === 1 ? "visit" : "visits"}`;
+  return `${value.toLocaleString("en-US")} pts`;
+}

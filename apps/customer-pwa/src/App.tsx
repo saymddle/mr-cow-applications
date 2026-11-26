@@ -6,6 +6,7 @@ import logoUrl from "@mrcow/brand-config/assets/logo.webp";
 import { ErrorState, TabBarShell, ToastProvider, type ShellLink } from "@mrcow/ui";
 import type { AppConfig } from "./config";
 import { AccountScreen } from "./screens/Account";
+import { ActivityScreen } from "./screens/Activity";
 import { CodeScreen } from "./screens/Code";
 import { HomeScreen } from "./screens/Home";
 import { NotFound } from "./screens/NotFound";
@@ -44,6 +45,7 @@ export function App({ config, auth, api }: { config: AppConfig; auth: AuthAdapte
               <Route index element={<HomeScreen />} />
               <Route path="code" element={<CodeScreen />} />
               <Route path="rewards" element={<RewardsScreen />} />
+              <Route path="activity" element={<ActivityScreen />} />
               <Route path="stores" element={<StoresScreen />} />
               <Route path="account" element={<AccountScreen />} />
               <Route path="*" element={<NotFound />} />

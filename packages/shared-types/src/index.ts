@@ -39,7 +39,15 @@ export type TransactionAssociation = ResponseOf<"associateOrder">;
 export type Wallet = ResponseOf<"getWallet">;
 export type ActivityPage = ResponseOf<"listActivity">;
 export type RewardPage = ResponseOf<"listRewards">;
+export type ActivityItem = ActivityPage["items"][number];
+export type RewardSummary = RewardPage["items"][number];
+export type RewardIneligibleReason = NonNullable<RewardSummary["eligibility"]>["reasons"][number];
 export type IssuedRedemption = ResponseOf<"issueRedemption">;
+export type IssueRedemptionRequest = RequestBodyOf<"issueRedemption">;
+export type CustomerRedemptionPage = ResponseOf<"listMyRedemptions">;
+export type CustomerRedemption = CustomerRedemptionPage["items"][number];
+export type RedemptionVerification = ResponseOf<"verifyRedemption">;
+export type AdjustmentRequestSummary = ResponseOf<"requestAdjustment">;
 export type HealthResponse = ResponseOf<"health">;
 
 /** Error envelope every TOGIVA Core error response uses. */

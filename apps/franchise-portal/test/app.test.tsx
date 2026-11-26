@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { beforeEach, describe, expect, it } from "vitest";
-import type { TogivaClient } from "@mrcow/api-client";
+import { TogivaApiError, type TogivaClient } from "@mrcow/api-client";
 import type { AuthAdapter } from "@mrcow/auth";
 import type { Permission } from "@mrcow/shared-types";
 import { App } from "../src/App";
@@ -17,8 +17,18 @@ const auth: AuthAdapter = {
   signInWithPassword: async () => ({ ok: true }), signUp: async () => ({ ok: true }), sendPasswordReset: async () => ({ ok: true }), signOut: async () => {},
 };
 
+const verification = { id: "red-1", status: "issued", reward: { id: "r1", name: "Small Treat", posDiscountRef: null }, customer: { firstName: "Sam", membershipLast4: "0057" }, locationId: A, expiresAt: "2026-11-26T20:00:00Z", completedAt: null };
+const redemptions = {
+  verify: async (_o: string, _l: string, body: { token: string }) => {
+    if (body.token !== "AB12-CD34-EF56-GH78") throw new TogivaApiError(404, "redemption_invalid", "bad");
+    return verification;
+  },
+  complete: async () => ({ ...verification, status: "completed", completedAt: "2026-11-26T19:00:00Z" }),
+};
+
 function api(locations: Record<string, Permission[]>, orgPerms: Permission[] = []) {
   return {
+    redemptions,
     organizationBySlug: async () => ORG,
     getLocation: async (_o: string, id: string) => ({
       id, organizationId: ORG.id, storeCode: id === A ? "A-01" : "B-02", name: id === A ? "Alpha Store" : "Beta Store", status: "active", loyaltyParticipating: true,
@@ -73,5 +83,18 @@ describe("franchise portal", () => {
     render(<MemoryRouter><App config={config} auth={signedOut} api={api({})} /></MemoryRouter>);
     await waitFor(() => expect(screen.getByRole("heading", { name: "Sign in" })).toBeTruthy());
     expect(screen.queryByRole("button", { name: "Create an account" })).toBeNull();
+  });
+
+  it("lets a cashier check a reward code and mark it used", async () => {
+    renderAt("/redemptions", api({ [A]: ["location.read", "rewards.redeem.verify"] }));
+    const input = await screen.findByLabelText("Reward code");
+    fireEvent.change(input, { target: { value: "ZZZZ-ZZZZ" } });
+    fireEvent.click(screen.getByRole("button", { name: "Check code" }));
+    await waitFor(() => expect(screen.getByText(/isn't a valid reward/)).toBeTruthy());
+    fireEvent.change(input, { target: { value: "AB12-CD34-EF56-GH78" } });
+    fireEvent.click(screen.getByRole("button", { name: "Check code" }));
+    await waitFor(() => expect(screen.getByText("For Sam · member ending 0057")).toBeTruthy());
+    fireEvent.click(screen.getByRole("button", { name: "Mark as used" }));
+    await waitFor(() => expect(screen.getByText("Small Treat redeemed")).toBeTruthy());
   });
 });

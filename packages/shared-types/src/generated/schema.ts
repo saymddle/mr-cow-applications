@@ -217,7 +217,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Points, tier progress and next reward */
+        /**
+         * Points, tier progress and next reward
+         * @description Balances are computed from the append-only ledger. pendingPoints are earned but inside the program's refund window. dataStatus is pending_updates while a submitted purchase awaits POS confirmation or the loyalty engine.
+         */
         get: operations["getWallet"];
         put?: never;
         post?: never;
@@ -251,7 +254,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Reward catalog with per-customer eligibility */
+        /**
+         * Reward catalog with per-customer eligibility
+         * @description Active, non-surprise rewards ordered by points cost. Pass locationId to evaluate store-specific availability and stock.
+         */
         get: operations["listRewards"];
         put?: never;
         post?: never;
@@ -268,10 +274,127 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** The caller's redemptions, newest first */
+        get: operations["listMyRedemptions"];
+        put?: never;
+        /**
+         * Reserve points for a reward and get a redemption token
+         * @description Debits the points immediately and returns a high-entropy token (never the four-digit connection code) for the cashier. Unused tokens expire after the reward's TTL and the points are returned. Idempotent per idempotencyKey: a retry returns the same redemption with 200.
+         */
+        post: operations["issueRedemption"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/organizations/{organizationId}/redemptions/{redemptionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Show an unused redemption token again */
+        get: operations["getMyRedemption"];
+        put?: never;
+        post?: never;
+        /** Cancel an unused redemption and get the points back */
+        delete: operations["cancelMyRedemption"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/organizations/{organizationId}/locations/{locationId}/redemptions/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
         get?: never;
         put?: never;
-        /** Reserve points for a reward and get a redemption token */
-        post: operations["issueRedemption"];
+        /** Check a customer's reward token without using it */
+        post: operations["verifyRedemption"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/organizations/{organizationId}/locations/{locationId}/redemptions/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark a reward as handed over (exactly once) */
+        post: operations["completeRedemption"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/organizations/{organizationId}/locations/{locationId}/loyalty/adjustments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Request a points correction for a member (store-level)
+         * @description Creates a pending request. Balances change only after a different person approves it.
+         */
+        post: operations["requestLocationAdjustment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/organizations/{organizationId}/loyalty/adjustments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Adjustment requests, newest first */
+        get: operations["listAdjustments"];
+        put?: never;
+        /**
+         * Request a points correction for a member (organization-level)
+         * @description Creates a pending request. Balances change only after a different person approves it.
+         */
+        post: operations["requestAdjustment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/organizations/{organizationId}/loyalty/adjustments/{adjustmentId}/decision": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Approve (apply to the ledger) or reject an adjustment request
+         * @description The reviewer must be a different person from the requester.
+         */
+        post: operations["decideAdjustment"];
         delete?: never;
         options?: never;
         head?: never;
@@ -285,7 +408,7 @@ export interface components {
         ApiError: {
             error: {
                 /** @enum {string} */
-                code: "unauthenticated" | "forbidden" | "not_found" | "validation_failed" | "conflict" | "rate_limited" | "idempotency_conflict" | "membership_required" | "location_not_participating" | "connection_code_invalid" | "connection_code_expired" | "connection_code_already_used" | "connection_code_locked_out" | "connection_code_reservation_expired" | "connection_code_not_reserved_by_you" | "connection_code_space_exhausted" | "order_already_associated" | "internal_error";
+                code: "unauthenticated" | "forbidden" | "not_found" | "validation_failed" | "conflict" | "rate_limited" | "idempotency_conflict" | "membership_required" | "location_not_participating" | "connection_code_invalid" | "connection_code_expired" | "connection_code_already_used" | "connection_code_locked_out" | "connection_code_reservation_expired" | "connection_code_not_reserved_by_you" | "connection_code_space_exhausted" | "order_already_associated" | "loyalty_program_unavailable" | "insufficient_points" | "reward_unavailable" | "redemption_invalid" | "redemption_expired" | "redemption_already_completed" | "redemption_wrong_location" | "internal_error";
                 message: string;
                 requestId?: string;
                 details?: unknown;
@@ -1202,6 +1325,15 @@ export interface operations {
                     };
                 };
             };
+            /** @description loyalty_program_unavailable */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description unauthenticated */
             401: {
                 headers: {
@@ -1264,6 +1396,15 @@ export interface operations {
                         }[];
                         nextCursor: string | null;
                     };
+                };
+            };
+            /** @description loyalty_program_unavailable */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
                 };
             };
             /** @description unauthenticated */
@@ -1332,6 +1473,86 @@ export interface operations {
                     };
                 };
             };
+            /** @description loyalty_program_unavailable */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description membership_required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    listMyRedemptions: {
+        parameters: {
+            query?: {
+                cursor?: string;
+                limit?: number;
+                status?: "issued" | "completed" | "expired" | "cancelled" | "reversed";
+            };
+            header?: never;
+            path: {
+                organizationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            rewardId: string;
+                            /** Format: uuid */
+                            locationId: string;
+                            /** @enum {string} */
+                            status: "issued" | "completed" | "expired" | "cancelled" | "reversed";
+                            pointsCost: number;
+                            /** Format: date-time */
+                            expiresAt: string;
+                            rewardName: string;
+                            /** Format: date-time */
+                            completedAt: string | null;
+                        }[];
+                        nextCursor: string | null;
+                    };
+                };
+            };
+            /** @description loyalty_program_unavailable */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description unauthenticated */
             401: {
                 headers: {
@@ -1395,6 +1616,15 @@ export interface operations {
                     };
                 };
             };
+            /** @description loyalty_program_unavailable, insufficient_points, reward_unavailable */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description unauthenticated */
             401: {
                 headers: {
@@ -1413,7 +1643,662 @@ export interface operations {
                     "application/json": components["schemas"]["ApiError"];
                 };
             };
+            /** @description not_found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description conflict, idempotency_conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description location_not_participating */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    getMyRedemption: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                organizationId: string;
+                redemptionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        rewardId: string;
+                        /** Format: uuid */
+                        locationId: string;
+                        /** @enum {string} */
+                        status: "issued" | "completed" | "expired" | "cancelled" | "reversed";
+                        token: string;
+                        pointsCost: number;
+                        /** Format: date-time */
+                        expiresAt: string;
+                    };
+                };
+            };
+            /** @description redemption_invalid, redemption_expired */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description membership_required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description not_found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    cancelMyRedemption: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                organizationId: string;
+                redemptionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description redemption_already_completed */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description membership_required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description not_found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    verifyRedemption: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                organizationId: string;
+                locationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    token: string;
+                    terminalId?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** @enum {string} */
+                        status: "issued" | "completed" | "expired" | "cancelled" | "reversed";
+                        reward: {
+                            /** Format: uuid */
+                            id: string;
+                            name: string;
+                            posDiscountRef: string | null;
+                        };
+                        customer: {
+                            firstName: string | null;
+                            membershipLast4: string;
+                        };
+                        /** Format: uuid */
+                        locationId: string;
+                        /** Format: date-time */
+                        expiresAt: string;
+                        /** Format: date-time */
+                        completedAt: string | null;
+                    };
+                };
+            };
+            /** @description redemption_invalid, redemption_expired, redemption_already_completed, redemption_wrong_location */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    completeRedemption: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                organizationId: string;
+                locationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    token: string;
+                    terminalId?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** @enum {string} */
+                        status: "issued" | "completed" | "expired" | "cancelled" | "reversed";
+                        reward: {
+                            /** Format: uuid */
+                            id: string;
+                            name: string;
+                            posDiscountRef: string | null;
+                        };
+                        customer: {
+                            firstName: string | null;
+                            membershipLast4: string;
+                        };
+                        /** Format: uuid */
+                        locationId: string;
+                        /** Format: date-time */
+                        expiresAt: string;
+                        /** Format: date-time */
+                        completedAt: string | null;
+                    };
+                };
+            };
+            /** @description redemption_invalid, redemption_expired, redemption_already_completed, redemption_wrong_location */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    requestLocationAdjustment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                organizationId: string;
+                locationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    organizationCustomerId: string;
+                    points: number;
+                    /** @default 0 */
+                    qualifyingAmountMinor?: number;
+                    reason: string;
+                    /** Format: uuid */
+                    supportCaseId?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Success */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        organizationCustomerId: string;
+                        /** Format: uuid */
+                        locationId: string | null;
+                        points: number;
+                        qualifyingAmountMinor: number;
+                        reason: string;
+                        /** @enum {string} */
+                        status: "pending" | "approved" | "rejected" | "applied";
+                        /** Format: uuid */
+                        requestedBy: string;
+                        /** Format: uuid */
+                        reviewedBy: string | null;
+                        /** Format: date-time */
+                        reviewedAt: string | null;
+                        ledgerEntryId: string | null;
+                        /** Format: date-time */
+                        createdAt: string;
+                    };
+                };
+            };
+            /** @description validation_failed, loyalty_program_unavailable */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description not_found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    listAdjustments: {
+        parameters: {
+            query?: {
+                cursor?: string;
+                limit?: number;
+                status?: "pending" | "approved" | "rejected" | "applied";
+            };
+            header?: never;
+            path: {
+                organizationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            organizationCustomerId: string;
+                            /** Format: uuid */
+                            locationId: string | null;
+                            points: number;
+                            qualifyingAmountMinor: number;
+                            reason: string;
+                            /** @enum {string} */
+                            status: "pending" | "approved" | "rejected" | "applied";
+                            /** Format: uuid */
+                            requestedBy: string;
+                            /** Format: uuid */
+                            reviewedBy: string | null;
+                            /** Format: date-time */
+                            reviewedAt: string | null;
+                            ledgerEntryId: string | null;
+                            /** Format: date-time */
+                            createdAt: string;
+                        }[];
+                        nextCursor: string | null;
+                    };
+                };
+            };
+            /** @description unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    requestAdjustment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                organizationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    organizationCustomerId: string;
+                    /** Format: uuid */
+                    locationId?: string;
+                    points: number;
+                    /** @default 0 */
+                    qualifyingAmountMinor?: number;
+                    reason: string;
+                    /** Format: uuid */
+                    supportCaseId?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Success */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        organizationCustomerId: string;
+                        /** Format: uuid */
+                        locationId: string | null;
+                        points: number;
+                        qualifyingAmountMinor: number;
+                        reason: string;
+                        /** @enum {string} */
+                        status: "pending" | "approved" | "rejected" | "applied";
+                        /** Format: uuid */
+                        requestedBy: string;
+                        /** Format: uuid */
+                        reviewedBy: string | null;
+                        /** Format: date-time */
+                        reviewedAt: string | null;
+                        ledgerEntryId: string | null;
+                        /** Format: date-time */
+                        createdAt: string;
+                    };
+                };
+            };
+            /** @description validation_failed, loyalty_program_unavailable */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description not_found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    decideAdjustment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                organizationId: string;
+                adjustmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    decision: "approve" | "reject";
+                    note?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        organizationCustomerId: string;
+                        /** Format: uuid */
+                        locationId: string | null;
+                        points: number;
+                        qualifyingAmountMinor: number;
+                        reason: string;
+                        /** @enum {string} */
+                        status: "pending" | "approved" | "rejected" | "applied";
+                        /** Format: uuid */
+                        requestedBy: string;
+                        /** Format: uuid */
+                        reviewedBy: string | null;
+                        /** Format: date-time */
+                        reviewedAt: string | null;
+                        ledgerEntryId: string | null;
+                        /** Format: date-time */
+                        createdAt: string;
+                    };
+                };
+            };
+            /** @description insufficient_points */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description not_found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description conflict */
             409: {
                 headers: {
                     [name: string]: unknown;

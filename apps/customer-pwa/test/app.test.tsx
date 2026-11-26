@@ -24,9 +24,23 @@ const store = (id: string, name: string, extra: object = {}) => ({
 });
 const membershipRow = { organization: ORG, organizationCustomerId: "c1", membershipNumber: "4821930057", status: "active", joinedAt: "2026-11-01T00:00:00Z", preferredLocationId: S1 };
 
-function makeApi(opts: { member?: boolean } = {}) {
+const walletBody = (available: number) => ({
+  organizationCustomerId: "c1", membershipNumber: "4821930057", availablePoints: available, pendingPoints: 8,
+  currentTier: { id: "t1", rank: 1, name: "Level One", description: null, qualificationMetric: "qualifying_spend", qualificationThreshold: 0 },
+  nextTier: { id: "t2", rank: 2, name: "Level Two", description: null, qualificationMetric: "qualifying_spend", qualificationThreshold: 10000 },
+  qualification: { metric: "qualifying_spend", periodStart: "2026-01-01", periodEnd: "2026-12-31", progress: 2500, nextThreshold: 10000 },
+  nextReward: { rewardId: "r2", name: "Big Treat", pointsCost: 100, pointsNeeded: 70 }, dataStatus: "current",
+});
+const reward = (id: string, name: string, cost: number, reasons: string[] = []) => ({
+  id, name, description: null, category: "food", pointsCost: cost, imageRef: null, availableFrom: null, availableUntil: null, minTierRank: null, locationIds: null,
+  eligibility: { eligible: reasons.length === 0, reasons },
+});
+
+function makeApi(opts: { member?: boolean; program?: boolean } = {}) {
   let member = opts.member ?? true;
   let current: unknown = null;
+  let points = 30;
+  const unavailable = () => new TogivaApiError(409, "loyalty_program_unavailable", "not live");
   const api = {
     organizationBySlug: vi.fn(async () => ORG),
     me: vi.fn(async () => ({
@@ -43,6 +57,23 @@ function makeApi(opts: { member?: boolean } = {}) {
         return { id: "code-1", code: "0871", status: "active", location: { id: body.locationId, name: "Kaimuki" }, issuedAt: new Date().toISOString(), expiresAt: exp, ttlSeconds: 300 };
       }),
       cancel: vi.fn(async () => { current = null; }),
+    },
+    loyalty: {
+      wallet: vi.fn(async () => { if (opts.program === false) throw unavailable(); return walletBody(points); }),
+      activity: vi.fn(async () => ({ items: [
+        { id: "txn:1", kind: "purchase_earned", occurredAt: "2026-11-20T18:00:00Z", location: { id: S1, name: "Kaimuki" }, eligibleAmount: { amountMinor: 1299, currency: "USD" }, points: 12, bonusPoints: 5, description: "Purchase" },
+        { id: "ledger:9", kind: "redemption", occurredAt: "2026-11-21T18:00:00Z", location: null, eligibleAmount: null, points: -25, bonusPoints: 0, description: "Redeemed Small Treat" },
+      ], nextCursor: null })),
+      rewards: vi.fn(async () => { if (opts.program === false) throw unavailable(); return { items: [reward("r1", "Small Treat", 25, points >= 25 ? [] : ["insufficient_points"]), reward("r2", "Big Treat", 100, ["insufficient_points"])], nextCursor: null }; }),
+    },
+    redemptions: {
+      list: vi.fn(async () => ({ items: [], nextCursor: null })),
+      issue: vi.fn(async (_o: string, body: { rewardId: string; locationId: string }) => {
+        points -= 25;
+        return { id: "red-1", rewardId: body.rewardId, locationId: body.locationId, status: "issued", token: "AB12-CD34-EF56-GH78", pointsCost: 25, expiresAt: new Date(Date.now() + 900_000).toISOString() };
+      }),
+      get: vi.fn(),
+      cancel: vi.fn(async () => { points += 25; }),
     },
     setCurrent: (c: unknown) => { current = c; },
   };
@@ -147,5 +178,47 @@ describe("four-digit code", () => {
     await waitFor(() => screen.getByRole("option", { name: "Kaimuki" }));
     fireEvent.click(screen.getByRole("button", { name: "Get my code" }));
     await waitFor(() => expect(screen.getByText(/Try again in 10 min/)).toBeTruthy());
+  });
+});
+
+describe("points and rewards", () => {
+  it("shows the live balance, level progress and next reward on Home", async () => {
+    renderAt("/", auth(session));
+    await waitFor(() => expect(screen.getByText("30")).toBeTruthy());
+    expect(screen.getByText("+8 pending")).toBeTruthy();
+    expect(screen.getByText("$25 of $100 to Level Two")).toBeTruthy();
+    expect(screen.getByRole("progressbar", { name: "Progress to Level Two" }).getAttribute("aria-valuenow")).toBe("25");
+    expect(screen.getByText(/70 more points for Big Treat/)).toBeTruthy();
+  });
+
+  it("says the program isn't live instead of showing made-up numbers", async () => {
+    renderAt("/", auth(session), makeApi({ program: false }));
+    await waitFor(() => expect(screen.getByText("Rewards are almost here")).toBeTruthy());
+    renderAt("/rewards", auth(session), makeApi({ program: false }));
+    await waitFor(() => expect(screen.getAllByText("Rewards are almost here").length).toBe(2));
+  });
+
+  it("lists activity from the ledger", async () => {
+    renderAt("/activity", auth(session));
+    await waitFor(() => expect(screen.getByText("Purchase · Kaimuki")).toBeTruthy());
+    expect(screen.getByText("+17")).toBeTruthy();
+    expect(screen.getByText("-25")).toBeTruthy();
+  });
+
+  it("redeems an eligible reward at the chosen store and shows the token, never the 4-digit code", async () => {
+    const api = makeApi();
+    renderAt("/rewards", auth(session), api);
+    await waitFor(() => expect(screen.getByText("Small Treat")).toBeTruthy());
+    expect(screen.getByText("Not enough points yet")).toBeTruthy();
+    const buttons = screen.getAllByRole("button", { name: "Redeem" }) as HTMLButtonElement[];
+    expect(buttons.map((b) => b.disabled)).toEqual([false, true]);
+    fireEvent.click(buttons[0]!);
+    fireEvent.click(await screen.findByRole("button", { name: "Use 25 points" }));
+    await waitFor(() => expect(screen.getByLabelText("Reward code A B 1 2 - C D 3 4 - E F 5 6 - G H 7 8")).toBeTruthy());
+    const call = api.redemptions.issue.mock.calls[0]![1] as { rewardId: string; locationId: string; idempotencyKey: string };
+    expect(call).toMatchObject({ rewardId: "r1", locationId: S1 });
+    expect(call.idempotencyKey.length).toBeGreaterThanOrEqual(8);
+    fireEvent.click(screen.getByRole("button", { name: "Cancel and return points" }));
+    await waitFor(() => expect(api.redemptions.cancel).toHaveBeenCalledWith(ORG.id, "red-1"));
   });
 });

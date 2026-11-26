@@ -13,7 +13,6 @@ const planned = (path: string, title: string, icon: string, phase: string, body:
 /** Screens whose features arrive in later phases. Navigation and permissions are already enforced. */
 export const plannedScreens = [
   planned("/identify", "Identify customer", "code", "Phase 5", "Enter a customer's four-digit code, confirm the member and attach the POS order. The TOGIVA Core endpoints for this are live; the screen comes next."),
-  planned("/redemptions", "Verify rewards", "gift", "Phase 4–5", "Check and complete reward redemptions presented at the counter."),
   planned("/transactions", "Transactions", "receipt", "Phase 7", "Orders received from the POS and their loyalty status."),
   planned("/performance", "Store performance", "chart", "Phase 5", "Sales, member visits and reward activity for this store."),
   planned("/loyalty", "Loyalty activity", "wallet", "Phase 4", "Points earned and redeemed at this store, and adjustment requests."),
