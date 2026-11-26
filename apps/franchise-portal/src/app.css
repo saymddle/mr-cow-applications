@@ -1,0 +1,13 @@
+.centered { min-height: 100dvh; display: grid; place-items: center; padding: 24px 16px; }
+.ops-brand { display: flex; align-items: center; gap: 10px; }
+.ops-brand img { height: 30px; width: auto; }
+.ops-brand span { font-family: var(--t-font-ui); font-weight: 800; font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: var(--t-accent); }
+.ops-brand--light { justify-content: center; padding: 14px; border-radius: var(--t-radius); background: var(--t-inverse); }
+.store-switch { display: grid; gap: 4px; margin: 0; font-size: .9rem; font-weight: 700; }
+.store-switch span { font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; opacity: .7; }
+.ops-user { display: grid; gap: 4px; }
+.ops-user__email { overflow-wrap: anywhere; opacity: .85; }
+.ops-user__out { justify-self: start; border: 0; padding: 0; background: none; color: var(--t-accent); font: inherit; font-weight: 700; cursor: pointer; }
+.card-title { margin: 0 0 10px; font-size: 1rem; font-weight: 800; }
+.small { font-size: .85rem; margin: 10px 0 0; }
+.plain-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }

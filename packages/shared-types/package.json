@@ -1,0 +1,22 @@
+{
+  "name": "@mrcow/shared-types",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Types for the TOGIVA Core v1 API, generated from the versioned OpenAPI document. Never hand-edit src/generated.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "sync": "node scripts/sync-openapi.mjs",
+    "generate": "openapi-typescript openapi/v1.json -o src/generated/schema.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.7",
+    "openapi-typescript": "^7.13.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.7"
+  }
+}

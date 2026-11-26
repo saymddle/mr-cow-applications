@@ -1,0 +1,11 @@
+{
+  "name": "@mrcow/api-client",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Typed client for the TOGIVA Core v1 API. All business logic stays in TOGIVA Core; this package only calls it.",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": { "typecheck": "tsc --noEmit", "test": "vitest run" },
+  "dependencies": { "@mrcow/shared-types": "workspace:*", "openapi-fetch": "^0.17.0" },
+  "devDependencies": { "typescript": "^5.9.3", "vitest": "^3.2.7" }
+}

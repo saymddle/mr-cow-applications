@@ -1,0 +1,22 @@
+{
+  "name": "mr-cow-applications",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.28.0",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "dev:customer": "pnpm --filter @mrcow/customer-pwa dev",
+    "dev:franchise": "pnpm --filter @mrcow/franchise-portal dev",
+    "dev:corporate": "pnpm --filter @mrcow/corporate-console dev",
+    "api:sync": "pnpm --filter @mrcow/shared-types sync",
+    "api:generate": "pnpm --filter @mrcow/shared-types generate"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.0",
+    "typescript": "^5.9.3"
+  },
+  "pnpm": { "onlyBuiltDependencies": ["esbuild"] }
+}
