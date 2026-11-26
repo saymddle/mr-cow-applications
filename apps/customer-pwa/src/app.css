@@ -1,0 +1,44 @@
+/* Customer PWA screen styles (layout only; tokens come from the brand theme). */
+.brand-link { display: block; }
+.brand-logo { height: 36px; width: auto; }
+@media (min-width: 900px) { .brand-logo { height: 42px; } }
+.centered { min-height: 100dvh; display: grid; place-items: center; padding: 24px 16px; }
+
+.screen-title { display: grid; gap: 4px; }
+.screen-title h1 { font-size: clamp(2.1rem, 9vw, 3.4rem); }
+.screen-title__lede { margin: 6px 0 0; font-weight: 600; max-width: 40ch; }
+
+.member-card { display: grid; gap: 10px; box-shadow: 6px 6px 0 var(--t-primary); }
+.member-card__row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.member-card__label { font-family: var(--t-font-ui); font-weight: 800; letter-spacing: .12em; text-transform: uppercase; font-size: .8rem; color: var(--t-accent); }
+.member-card__number { margin: 0; font-family: var(--t-font-display); font-stretch: 125%; font-weight: 900; font-size: clamp(1.6rem, 7vw, 2.2rem); letter-spacing: .06em; font-variant-numeric: tabular-nums; }
+.member-card__hint { margin: 0; opacity: .85; }
+
+.quick-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.quick-action {
+  display: grid; justify-items: center; gap: 6px; padding: 14px 8px; text-align: center; text-decoration: none;
+  font-family: var(--t-font-ui); font-weight: 800; font-size: .85rem;
+  background: var(--t-surface); border: var(--t-border-width) solid var(--t-line); border-radius: var(--t-radius-sm);
+  box-shadow: var(--t-shadow); transition: transform .12s ease, box-shadow .12s ease;
+}
+.quick-action:hover { transform: translate(-1px, -1px); box-shadow: var(--t-shadow-hover); }
+.quick-action:active { transform: translate(2px, 2px); box-shadow: var(--t-shadow-pressed); }
+.quick-action--primary { background: var(--t-primary); color: var(--t-primary-text); }
+
+.coming-soon__phase { font-size: .8rem; font-weight: 700; margin-top: 8px; }
+
+.details { display: grid; grid-template-columns: max-content 1fr; gap: 8px 16px; margin: 0; }
+.details dt { font-family: var(--t-font-ui); font-weight: 800; font-size: .85rem; color: var(--t-muted); }
+.details dd { margin: 0; overflow-wrap: anywhere; }
+
+/* Signed-out welcome: a colour band like the website's menu boards. */
+.welcome { min-height: 100dvh; display: grid; grid-template-rows: auto 1fr; }
+.welcome__band {
+  background: var(--t-primary); color: var(--t-primary-text); border-bottom: var(--t-border-width) solid var(--t-line);
+  padding: calc(28px + env(safe-area-inset-top, 0px)) 20px 36px; display: grid; justify-items: center; text-align: center; gap: 10px;
+}
+.welcome__logo { width: min(320px, 78vw); height: auto; filter: drop-shadow(4px 5px 0 rgba(21, 16, 13, .9)); }
+.welcome__sticker { margin: 4px 0 -10px; font-size: clamp(2.4rem, 10vw, 3.4rem); transform: rotate(-6deg); color: var(--t-surface); text-shadow: 2px 2px 0 var(--t-text); }
+.welcome__title { font-size: clamp(2.2rem, 10vw, 4rem); max-width: 14ch; }
+.welcome__lede { margin: 0; font-weight: 600; max-width: 34ch; }
+.welcome__main { padding: 28px 16px 48px; }

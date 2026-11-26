@@ -1,0 +1,33 @@
+{
+  "name": "@mrcow/auth",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Sign-in (Supabase Auth), session state, the caller's TOGIVA identity (/v1/me) and permission-based navigation.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@mrcow/api-client": "workspace:*",
+    "@mrcow/shared-types": "workspace:*",
+    "@supabase/supabase-js": "^2.119.2",
+    "@mrcow/ui": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.3.0",
+    "@types/react": "^19.0.0",
+    "jsdom": "^26.1.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.7",
+    "@testing-library/user-event": "^14.6.0"
+  }
+}

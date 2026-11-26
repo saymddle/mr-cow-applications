@@ -1,0 +1,25 @@
+name: ci
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      # Build-time settings for CI only; real values are set per deployment.
+      VITE_TOGIVA_API_URL: https://api.invalid
+      VITE_TOGIVA_ORGANIZATION_SLUG: mr-cow
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+      - name: Generated API types match the vendored OpenAPI document
+        run: pnpm api:generate && git diff --exit-code packages/shared-types/src/generated

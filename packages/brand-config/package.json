@@ -1,0 +1,13 @@
+{
+  "name": "@mrcow/brand-config",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Mr. Cow brand tokens, fonts and assets, taken from the Mr. Cow website (saymddle/Mr-Cow, website/src/style.css). The only place Mr. Cow styling is defined.",
+  "exports": {
+    ".": "./src/index.ts",
+    "./assets/*": "./assets/*"
+  },
+  "scripts": { "typecheck": "tsc --noEmit", "test": "vitest run" },
+  "devDependencies": { "typescript": "^5.9.3", "vitest": "^3.2.7" }
+}
